@@ -47,7 +47,6 @@ class Waterfall extends Component {
             // 元素高
             const height = this.refs[keys[i]].clientHeight;
             // 列
-            // const gridColumn = (i + 1) % columnNum === 0 ? columnNum : (i + 1) % columnNum;
             const gridColumn = this.columns.indexOf(Math.min(...this.columns)) + 1;
             // 开始行
             const gridStart = this.columns[gridColumn - 1] + 1;
