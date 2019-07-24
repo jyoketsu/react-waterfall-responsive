@@ -1,5 +1,9 @@
 # Waterfall-react 瀑布流组件
 
+### Install with npm
+```bash
+npm i react-waterfall-responsive
+```
 ### demo
 [demo](https://jyoketsu.github.io/react-waterfall-responsive/)
 ### Usage
