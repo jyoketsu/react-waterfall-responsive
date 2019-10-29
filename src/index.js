@@ -1,66 +1,104 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class Waterfall extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            itemStyleList: null
-        }
+  constructor(props) {
+    super(props);
+    this.setItemWidth = this.setItemWidth.bind(this);
+    this.state = { itemWidth: 0 };
+  }
+
+  render() {
+    const { itemWidth } = this.state;
+    const { columnNum, gap, children } = this.props;
+    // 高度数组
+    let heightArr = [];
+    // 元素数组
+    let items = [];
+    for (let i = 0; i < children.length; i++) {
+      const nowChild = children[i];
+      const height = (nowChild.props.height / nowChild.props.width) * itemWidth;
+      if (i < columnNum) {
+        // 第一行的
+        items.push({
+          // 子组件
+          item: nowChild,
+          // 样式
+          style: {
+            top: 0,
+            left: itemWidth * i,
+            width: itemWidth,
+            height: height
+          }
+        });
+        heightArr.push(height);
+      } else {
+        // 其他行
+        // 最小高度
+        let minHeight = Math.min(...heightArr);
+        // 最小高度的索引
+        let index = heightArr.indexOf(minHeight);
+
+        items.push({
+          item: nowChild,
+          style: {
+            top: minHeight,
+            left: items[index].style.left,
+            width: itemWidth,
+            height: height
+          }
+        });
+        // 更新最小高度：最小高度 + 当前组件的高
+        heightArr[index] = minHeight + height;
+      }
     }
 
-    render() {
-        const { itemStyleList } = this.state;
-        // 颗粒度，列数
-        const { columnNum, columnGap, rowGap, children, itemWidth } = this.props;
+    return (
+      <div
+        className="waterfall"
+        style={{
+          width: "100%",
+          position: "relative"
+        }}
+        ref={node => (this.ref = node)}
+      >
+        {items.map((child, index) => (
+          <div
+            key={index}
+            ref={`item${index}`}
+            style={{
+              position: "absolute",
+              top: `${child.style.top}px`,
+              left: `${child.style.left}px`,
+              width: `${child.style.width}px`,
+              height: `${child.style.height}px`,
+              padding: `${gap}px`,
+              boxSizing: "border-box"
+            }}
+          >
+            {child.item}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-        return (
-            <div
-                className="waterfall"
-                style={itemStyleList ? {
-                    width: `${itemWidth * columnNum + (columnNum - 1) * columnGap}px`,
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${columnNum}, 1fr)`,
-                    gridGap: `${rowGap}px ${columnGap}px`,
-                    justifyItems: 'center',
-                } : {}}
-            >
-                {children.map((child, index) => (
-                    <div
-                        key={index}
-                        ref={`item${index}`}
-                        style={itemStyleList ? itemStyleList[index] : {}}
-                    >
-                        {child}
-                    </div>
-                ))}
-            </div>
-        );
-    }
+  componentDidMount() {
+    const that = this;
+    this.setState({
+      itemWidth: this.setItemWidth()
+    });
+    window.addEventListener(
+      "resize",
+      function() {
+        that.setState({ itemWidth: that.setItemWidth() });
+      },
+      true
+    );
+  }
 
-    componentDidMount() {
-        // 颗粒度，列数
-        const { kernel, columnNum, } = this.props;
-        this.columns = Array(columnNum).fill(0);
-        let itemStyleList = [];
-        const keys = Object.keys(this.refs);
-        for (let i = 0; i < keys.length; i++) {
-            // 元素高
-            const height = this.refs[keys[i]].clientHeight;
-            // 列
-            const gridColumn = this.columns.indexOf(Math.min(...this.columns)) + 1;
-            // 开始行
-            const gridStart = this.columns[gridColumn - 1] + 1;
-            // 结束行
-            const gridEnd = gridStart + Math.ceil(height / kernel) - 1;
-            const gridRow = `${gridStart} / ${gridEnd}`;
-            this.columns[gridColumn - 1] = gridEnd;
-            itemStyleList.push({
-                gridRow: gridRow,
-                gridColumn: gridColumn,
-            });
-        }
-        this.setState({ itemStyleList: itemStyleList });
-    }
+  setItemWidth() {
+    return this.ref.offsetWidth / this.props.columnNum;
+  }
 }
 
 export default Waterfall;
