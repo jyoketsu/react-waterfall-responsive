@@ -57,7 +57,9 @@ class Waterfall extends Component {
         className="waterfall"
         style={{
           width: "100%",
-          position: "relative"
+          position: "relative",
+          height: `${Math.max(...heightArr)}px`,
+          overflow: "hidden"
         }}
         ref={node => (this.ref = node)}
       >
